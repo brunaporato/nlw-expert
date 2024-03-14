@@ -7,9 +7,58 @@ interface NewNoteCardProps {
   onNoteSaved: (content: string) => void
 }
 
+let speechRecognition: SpeechRecognition | null = null
+
 export function NewNoteCard({ onNoteSaved }: NewNoteCardProps) {
   const [isOnboardShown, setIsOnboardShown] = useState(true)
+  const [isRecording, setIsRecording] = useState(false)
   const [content, setContent] = useState('')
+
+  function handleStartRecording() {
+    const isSpeechRecognitionAPIAvailable =
+      'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
+
+    if (!isSpeechRecognitionAPIAvailable) {
+      return alert(
+        "Sadly, this current browser doesn't support Speech Recognition.",
+      )
+    }
+
+    setIsRecording(true)
+    setIsOnboardShown(false)
+
+    const SpeechRecognitionAPI =
+      window.SpeechRecognition || window.webkitSpeechRecognition
+
+    speechRecognition = new SpeechRecognitionAPI()
+
+    speechRecognition.lang = 'pt-BR'
+    speechRecognition.continuous = true
+    speechRecognition.maxAlternatives = 1
+    speechRecognition.interimResults = true
+
+    speechRecognition.onresult = (e) => {
+      const transcription = Array.from(e.results).reduce((text, result) => {
+        return text.concat(result[0].transcript)
+      }, '')
+
+      setContent(transcription)
+    }
+
+    speechRecognition.onerror = (e) => {
+      console.error(e)
+    }
+
+    speechRecognition.start()
+  }
+
+  function handleStopRecording() {
+    if (speechRecognition !== null) {
+      speechRecognition.stop()
+    }
+
+    setIsRecording(false)
+  }
 
   function handleHideOnboard() {
     setIsOnboardShown(false)
@@ -24,6 +73,11 @@ export function NewNoteCard({ onNoteSaved }: NewNoteCardProps) {
 
   function handleSaveNote(e: React.FormEvent) {
     e.preventDefault()
+
+    if (content === '') {
+      return
+    }
+
     onNoteSaved(content)
 
     setContent('')
@@ -47,7 +101,7 @@ export function NewNoteCard({ onNoteSaved }: NewNoteCardProps) {
           <Dialog.Close className="absolute right-0 top-0 bg-slate-800 p-1.5 text-slate-400 hover:text-slate-100">
             <X className="size-5" />
           </Dialog.Close>
-          <form onSubmit={handleSaveNote} className="flex flex-col flex-1">
+          <form className="flex flex-col flex-1">
             <div className="flex flex-1 flex-col gap-3 p-5">
               <span className="text-sm font-medium text-slate-200">
                 Add new note
@@ -55,11 +109,16 @@ export function NewNoteCard({ onNoteSaved }: NewNoteCardProps) {
               {isOnboardShown ? (
                 <p className="text-sm leading-6 text-slate-400">
                   Start{' '}
-                  <button className="font-medium text-lime-400 hover:underline">
+                  <button
+                    type="button"
+                    className="font-medium text-lime-400 hover:underline"
+                    onClick={handleStartRecording}
+                  >
                     recording an audio note
                   </button>{' '}
                   or simply{' '}
                   <button
+                    type="button"
                     className="font-medium text-lime-400 hover:underline"
                     onClick={handleHideOnboard}
                   >
@@ -77,12 +136,24 @@ export function NewNoteCard({ onNoteSaved }: NewNoteCardProps) {
               )}
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-lime-400 py-4 text-center text-sm text-lime-950 outline-none font-medium hover:bg-lime-500"
-            >
-              Save note
-            </button>
+            {isRecording ? (
+              <button
+                type="button"
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 py-4 text-center text-sm text-slate-300 outline-none font-medium hover:text-slate-100"
+                onClick={handleStopRecording}
+              >
+                <div className="size-2.5 rounded-full bg-red-500 animate-pulse" />
+                Recording! (click to stop)
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="w-full bg-lime-400 py-4 text-center text-sm text-lime-950 outline-none font-medium hover:bg-lime-500"
+                onClick={handleSaveNote}
+              >
+                Save note
+              </button>
+            )}
           </form>
         </Dialog.Content>
       </Dialog.Portal>
