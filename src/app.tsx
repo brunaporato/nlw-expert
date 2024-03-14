@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import logo from './assets/logo-nlw-expert.svg'
 import { NewNoteCard } from './components/new-note-card'
 import { NoteCard } from './components/note-card'
@@ -18,6 +18,7 @@ export function App() {
     }
     return []
   })
+  const [search, setSearch] = useState('')
 
   function onNoteSaved(content: string) {
     const newNote = {
@@ -32,6 +33,18 @@ export function App() {
     localStorage.setItem('@expertnotes:notes', JSON.stringify(notesArray))
   }
 
+  function handleSearch(e: ChangeEvent<HTMLInputElement>) {
+    const query = e.target.value
+    setSearch(query)
+  }
+
+  const filteredNotes =
+    search !== ''
+      ? notes.filter((note) =>
+          note.content.toLowerCase().includes(search.toLowerCase()),
+        )
+      : notes
+
   return (
     <div className="mx-auto max-w-6xl my-12 space-y-6">
       <img src={logo} alt="NlW Expert" />
@@ -40,6 +53,8 @@ export function App() {
           type="text"
           placeholder="Search your notes..."
           className="w-full bg-transparent outline-none text-3xl font-semibold tracking-tight placeholder:text-slate-500"
+          onChange={handleSearch}
+          value={search}
         />
       </form>
 
@@ -47,8 +62,8 @@ export function App() {
 
       <div className="grid grid-cols-3 auto-rows-[250px] gap-6">
         <NewNoteCard onNoteSaved={onNoteSaved} />
-        {notes &&
-          notes.map((note) => {
+        {filteredNotes &&
+          filteredNotes.map((note) => {
             return <NoteCard key={note.id} note={note} />
           })}
       </div>
