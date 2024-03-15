@@ -6,10 +6,12 @@ interface NoteCardProps {
   note: {
     date: Date
     content: string
+    id: string
   }
+  onNoteRemoved: (id: string) => void
 }
 
-export function NoteCard({ note }: NoteCardProps) {
+export function NoteCard({ note, onNoteRemoved }: NoteCardProps) {
   return (
     <Dialog.Root>
       <Dialog.Trigger className="rounded-md text-left flex flex-col bg-slate-800 p-5 gap-3 overflow-hidden relative outline-none hover:ring-2 hover:ring-slate-600 focus-visible:ring-2 focus-visible:ring-lime-400">
@@ -36,6 +38,7 @@ export function NoteCard({ note }: NoteCardProps) {
           <button
             type="button"
             className="w-full bg-slate-800 py-4 text-center text-sm text-slate-300 outline-none font-medium group"
+            onClick={() => onNoteRemoved(note.id)}
           >
             Want to{' '}
             <span className="text-red-400 group-hover:underline">

@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from 'react'
 import logo from './assets/logo-nlw-expert.svg'
 import { NewNoteCard } from './components/new-note-card'
 import { NoteCard } from './components/note-card'
+import { toast } from 'sonner'
 
 interface Note {
   id: string
@@ -31,6 +32,14 @@ export function App() {
 
     setNotes(notesArray)
     localStorage.setItem('@expertnotes:notes', JSON.stringify(notesArray))
+  }
+
+  function onNoteRemoved(id: string) {
+    const notesArray = notes.filter((note) => note.id !== id)
+
+    setNotes(notesArray)
+    localStorage.setItem('@expertnotes:notes', JSON.stringify(notesArray))
+    toast.error('Note deleted.')
   }
 
   function handleSearch(e: ChangeEvent<HTMLInputElement>) {
@@ -64,7 +73,13 @@ export function App() {
         <NewNoteCard onNoteSaved={onNoteSaved} />
         {filteredNotes &&
           filteredNotes.map((note) => {
-            return <NoteCard key={note.id} note={note} />
+            return (
+              <NoteCard
+                key={note.id}
+                note={note}
+                onNoteRemoved={onNoteRemoved}
+              />
+            )
           })}
       </div>
     </div>
