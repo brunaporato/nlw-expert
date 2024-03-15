@@ -21,7 +21,7 @@ This project was developed during NLW, an event at Rocketseat.
 - Search functionality to find notes instantly.
 
 ## Check the project
-You can check the project online [clicking here](https://brunaporato.github.io/nlw-expert)
+You can check the project online [clicking here](https://nlw-expert-orpin.vercel.app/)
 <br />
 OR
 <br />
